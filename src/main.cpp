@@ -376,7 +376,7 @@ void updateWifiLog() {
       char line[48];
       sprintf(line, "%s %02X:%02X ch%d %lds", ev.isDisassoc ? "DISASSOC" : "DEAUTH",
               ev.src[4], ev.src[5], ev.channel, (unsigned long)ago);
-      tft.setTextColor(ev.broadcast ? COL_BAD : COL_WARN, COL_CARD);
+      tft.setTextColor(COL_BAD, COL_CARD);
       tft.setTextFont(1);
       tft.setCursor(14, logY + i * rowH + 4);
       tft.print(line);
