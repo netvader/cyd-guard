@@ -1,43 +1,64 @@
 # CYD Guard
 
-WiFi-Deauth-Detector + BLE-Jam-Detector für das CYD (ESP32-2432S024).
-Beide Funktionen sind rein passiv (Empfangen/Mitlesen) – es wird nicht gesendet.
+A passive WiFi deauthentication detector and BLE jamming heuristic for the
+Sunton **ESP32-2432S024R** ("Cheap Yellow Display" style board, 2.4" ILI9341
+touchscreen), with a synthwave-themed touch UI and a tri-color status LED.
 
-## Build-Status
+Built with [Claude Code](https://claude.com/claude-code).
 
-Erfolgreich mit PlatformIO kompiliert (Flash 79.8%, RAM 16.5% belegt).
-Getestet wurde nur der Compile-Vorgang, nicht auf echter Hardware.
+Both detectors are purely **passive** (receive/listen only) — nothing is
+ever transmitted or jammed by this firmware.
 
-## Flashen
+## Features
+
+- **WiFi tab**: puts the WiFi radio into promiscuous mode and hops through
+  channels 1–13. Detects Deauthentication and Disassociation management
+  frames, shows a live counter, current channel, and an event log with
+  source MAC. Broadcast deauth (targeting `FF:FF:FF:FF:FF:FF`, i.e. every
+  client at once) is highlighted.
+- **BLE tab**: counts incoming BLE advertisements per second and learns a
+  rolling baseline. If the rate drops below ~30% of that baseline for 3
+  consecutive seconds, it raises an alert — a typical symptom of RF jamming
+  in the 2.4 GHz band. **This is a heuristic, not real spectrum analysis**
+  and can produce false positives (e.g. nearby BLE devices being turned off).
+- Portrait 240×320 UI with a synthwave boot logo, neon color palette, and a
+  tri-color status LED that pulses orange while safe and turns solid red
+  during an alert.
+
+## Hardware notes
+
+This board ships with several undocumented quirks that this firmware works
+around — worth knowing if you build for a different unit of the same family:
+
+- **Backlight**: GPIO 27 (not the commonly-documented GPIO 21).
+- **Touch**: shares the display's SPI bus (XPT2046 via TFT_eSPI's built-in
+  touch support), CS on GPIO 33.
+- **Status LED**: active-LOW, and the vendor's pin labels don't match
+  reality on this unit — GPIO 4 = red, GPIO 17 = green, GPIO 16 = blue
+  (vendor docs claim R=4, G=16, B=17).
+- **SD card CS** (GPIO 5) shares the display's SPI bus and must be
+  explicitly deselected at boot, or it can interfere with the display.
+
+## Building and flashing
 
 ```bash
 pio run -t upload
 pio device monitor -b 115200
 ```
 
-## Vor dem ersten Betrieb prüfen
+### Touch calibration
 
-- **Panel-Treiber**: Standard ist `ILI9341_2_DRIVER`. Falls Farben falsch/invertiert
-  sind, in `platformio.ini` auf `ST7789_DRIVER` umstellen.
-- **Touch-Kalibrierung**: `DEBUG_TOUCH` in `src/main.cpp` auf `true` setzen, die vier
-  Ecken berühren, Rohwerte im seriellen Monitor ablesen und `TS_MINX/MAXX/MINY/MAXY`
-  entsprechend anpassen. Danach wieder auf `false`.
+Set `RUN_TOUCH_CALIBRATION` to `true` in `src/main.cpp`, flash, follow the
+on-screen prompts, then copy the 5 values printed on the serial monitor into
+`calData[]`. Set the flag back to `false` and reflash.
 
-## Funktionsweise
+## Legal
 
-- **WiFi-Tab**: WiFi-Chip läuft im Promiscuous-Mode und hoppt durch Kanal 1–13.
-  Erkennt Deauthentication- und Disassociation-Management-Frames, zeigt Zähler,
-  Kanal und ein Live-Log mit Quell-MAC. Broadcast-Deauth (an FF:FF:FF:FF:FF:FF,
-  trifft alle Clients gleichzeitig) wird rot hervorgehoben.
-- **BLE-Tab**: Zählt empfangene BLE-Advertisements pro Sekunde und lernt einen
-  gleitenden Basiswert. Fällt die Rate 3 Sekunden in Folge auf unter ~30% des
-  Basiswerts, wird ein Alarm ausgelöst – typisches Symptom, wenn jemand den
-  2,4-GHz-Bereich stört. **Das ist eine Heuristik, keine Spektrumanalyse** und
-  kann False Positives haben (z.B. wenn reale BLE-Geräte in der Nähe abgeschaltet
-  werden).
+Both detectors are receive-only and legal to operate in most jurisdictions
+(check your local telecom regulations). An active jammer was intentionally
+**not** implemented — radio jammers are illegal in most countries (e.g. in
+Germany under §55 TKG, with fines up to €100,000).
 
-## Rechtliches
+## License
 
-Beide Detektoren sind reine Empfänger und in Deutschland unproblematisch.
-Ein aktiver Jammer wurde bewusst NICHT umgesetzt – Funkstörsender sind nach
-§55 TKG verboten (Bußgeld bis 100.000 €, Einzug durch die Bundesnetzagentur).
+MIT — see [LICENSE](LICENSE).
