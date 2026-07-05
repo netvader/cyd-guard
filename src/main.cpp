@@ -376,7 +376,9 @@ void updateWifiLog() {
       char line[48];
       sprintf(line, "%s %02X:%02X ch%d %lds", ev.isDisassoc ? "DISASSOC" : "DEAUTH",
               ev.src[4], ev.src[5], ev.channel, (unsigned long)ago);
-      tft.setTextColor(COL_BAD, COL_CARD);
+      // Red while still within the active-alert window, orange once older
+      bool fresh = (millis() - ev.t) < ALERT_HOLD_MS;
+      tft.setTextColor(fresh ? COL_BAD : COL_WARN, COL_CARD);
       tft.setTextFont(1);
       tft.setCursor(14, logY + i * rowH + 4);
       tft.print(line);
