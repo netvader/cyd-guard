@@ -9,6 +9,10 @@ Built with [Claude Code](https://claude.com/claude-code).
 Both detectors are purely **passive** (receive/listen only) — nothing is
 ever transmitted or jammed by this firmware.
 
+## Demo
+
+![BLE Jam Detector screen](docs/ble-jam-demo.gif)
+
 ## Features
 
 - **WiFi tab**: puts the WiFi radio into promiscuous mode and hops through
