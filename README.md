@@ -11,7 +11,8 @@ ever transmitted or jammed by this firmware.
 
 ## Demo
 
-![BLE Jam Detector screen](docs/ble-jam-demo.gif)
+<img src="docs/ble-jam-demo.gif" alt="BLE Jam Detector screen" width="280">
+
 
 ## Features
 
